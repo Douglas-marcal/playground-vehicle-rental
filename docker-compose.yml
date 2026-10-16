@@ -1,21 +1,21 @@
 services:
-  mysql:
+  vehicle-db:
     image: mysql:8.4
-    container_name: vehicle-rental-mysql
+    container_name: vehicle-db
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: ${DB_NAME:-vehicle_rental}
-      MYSQL_USER: ${DB_USER:-rental}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-rental}
+      MYSQL_DATABASE: vehicle_db
+      MYSQL_USER: vehicle
+      MYSQL_PASSWORD: vehicle
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
       TZ: America/Sao_Paulo
     command:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
     ports:
-      - "${DB_PORT:-3306}:3306"
+      - "3307:3306"
     volumes:
-      - mysql-data:/var/lib/mysql
+      - vehicle-db-data:/var/lib/mysql
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
       interval: 5s
@@ -23,21 +23,66 @@ services:
       retries: 20
       start_period: 20s
 
-  app:
+  customer-db:
+    image: mysql:8.4
+    container_name: customer-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: customer_db
+      MYSQL_USER: customer
+      MYSQL_PASSWORD: customer
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+      TZ: America/Sao_Paulo
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    ports:
+      - "3308:3306"
+    volumes:
+      - customer-db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  vehicle-service:
     build:
       context: .
-    container_name: vehicle-rental-app
+      args:
+        SERVICE: vehicle-service
+    container_name: vehicle-service
     restart: unless-stopped
     depends_on:
-      mysql:
+      vehicle-db:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_NAME:-vehicle_rental}
-      SPRING_DATASOURCE_USERNAME: ${DB_USER:-rental}
-      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-rental}
+      SPRING_DATASOURCE_URL: jdbc:mysql://vehicle-db:3306/vehicle_db
+      SPRING_DATASOURCE_USERNAME: vehicle
+      SPRING_DATASOURCE_PASSWORD: vehicle
       TZ: America/Sao_Paulo
     ports:
-      - "${APP_PORT:-8080}:8080"
+      - "8081:8081"
+
+  customer-service:
+    build:
+      context: .
+      args:
+        SERVICE: customer-service
+    container_name: customer-service
+    restart: unless-stopped
+    depends_on:
+      customer-db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://customer-db:3306/customer_db
+      SPRING_DATASOURCE_USERNAME: customer
+      SPRING_DATASOURCE_PASSWORD: customer
+      TZ: America/Sao_Paulo
+    ports:
+      - "8082:8082"
 
 volumes:
-  mysql-data:
+  vehicle-db-data:
+  customer-db-data:

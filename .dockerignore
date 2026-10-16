@@ -2,10 +2,12 @@
 .gradle
 .idea
 .kotlin
-build
+**/build
+**/.gradle
 out
 *.iml
 HELP.md
 README.md
+docs
 docker-compose.yml
 .env
