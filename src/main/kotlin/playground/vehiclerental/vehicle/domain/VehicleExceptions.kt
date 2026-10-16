@@ -1,7 +1,11 @@
 package playground.vehiclerental.vehicle.domain
 
-class InvalidPlateException(plate: String) : RuntimeException("Placa inválida: $plate")
+import playground.vehiclerental.shared.domain.ConflictException
+import playground.vehiclerental.shared.domain.NotFoundException
+import playground.vehiclerental.shared.domain.ValidationException
 
-class VehicleNotFoundException(id: Long) : RuntimeException("Veículo $id não encontrado")
+class InvalidPlateException(plate: String) : ValidationException("Placa inválida: $plate")
 
-class DuplicatePlateException(plate: Plate) : RuntimeException("Já existe um veículo com a placa $plate")
+class VehicleNotFoundException(id: Long) : NotFoundException("Veículo $id não encontrado")
+
+class DuplicatePlateException(plate: Plate) : ConflictException("Já existe um veículo com a placa $plate")

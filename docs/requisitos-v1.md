@@ -17,7 +17,7 @@
 | # | Módulo | Escopo | Status |
 |---|---|---|---|
 | 1 | Veículos | Cadastro com categoria, placa (antiga e Mercosul), status (disponível, alugado, manutenção) e quilometragem | Feito (cadastro, consulta, listagem, troca de status) |
-| 2 | Clientes | Cadastro com CNH (número, categoria, validade) e documentos (CPF) | A fazer |
+| 2 | Clientes | Cadastro com CNH (número, categoria, validade) e documentos (CPF) | Feito (cadastro, consulta, listagem, renovação da CNH) |
 | 3 | Filiais | Cadastro de filiais, usadas na retirada e na devolução | A fazer |
 | 4 | Reserva e locação | Reserva, retirada, devolução, período e filial | A fazer |
 | 5 | Disponibilidade e frota | Conflito de datas, manutenção, bloqueio de veículo indisponível | A fazer |
@@ -26,12 +26,20 @@
 | 8 | Usuários e perfis | Usuário com papel (admin, atendente), sem login | A fazer |
 | 9 | Relatórios | Frota, locações e faturamento por período | A fazer |
 
+## Regras de clientes (adotadas como padrão, ajustáveis)
+
+- CPF válido (dígitos verificadores) e único
+- CNH com 11 dígitos, única; vale até o fim do dia de validade
+- Idade mínima de 21 anos na data do cadastro
+- CNH vencida não permite o cadastro nem a renovação com outra CNH vencida
+- Categoria A (só moto) não habilita a alugar carros
+- A CNH vencida depois do cadastro bloqueia a locação: `Customer.canDriveOn(data)` é a regra que o módulo de locação vai usar
+
 ## Regras de negócio a confirmar
 
 Estas regras ainda não foram decididas e afetam o desenho dos módulos 4 a 7:
 
-- Cliente com CNH vencida ou de categoria incompatível pode alugar? (sugestão: não)
-- Idade mínima do condutor e política de condutor adicional
+- Política de condutor adicional
 - Como se calcula a diária: por dia corrido ou por períodos de 24 h
 - Valor da multa por atraso (fixo, percentual da diária ou por hora)
 - Caução: valor fixo por categoria ou percentual; quando é devolvida
